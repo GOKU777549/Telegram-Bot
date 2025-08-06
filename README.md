@@ -191,6 +191,14 @@ The bot includes utility functions in the `Bot/core/utils` directory:
 - `parser.py` - Parse command arguments from a message text
 - `formatting.py` - Format user mentions and time intervals
 
+## Deploy to StackHost (Optional):
+
+<div align="left">
+  <a href="https://t.me/StackHost">
+     <img src="https://graph.org/file/7e91d83f67d20f158cfdc.jpg" alt="Deploy On StackHost" width="200" />
+  </a>
+</div>
+
 ## Extending
 
 To add new features:
