@@ -1,19 +1,21 @@
+# Bot/modules/start.py
+
+from pyrogram import filters
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.errors import MediaEmpty
+import asyncio
+
 from Bot import bot
 from Bot.db.users import add_user, get_user
 from Bot.core.decorators.tracking import track_user
 from Bot.core.decorators.error_handler import handle_errors
 from Bot.core.utils.formatting import format_user_mention
-from pyrogram import filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-import os
-import asyncio
-from pyrogram import filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-from pyrogram.errors import MediaEmpty
+from Bot.db.groups import save_group_for_drop  # Make sure this exists
 
 # ✅ Valid video file ID
 VIDEO_FILE_ID = "BAACAgQAAxkBAAMGaJGjPcSIJn1Qi6HZQYnliYyHZZoAAucHAAKJDm1RRZTIdDl7u8AeBA"
 
+# 📜 Caption text
 CAPTION = """
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━⧫
 ✾ Wᴇʟᴄᴏᴍᴇ ᴛᴏ ᴛʜᴇ Naruto Bᴏᴛ
@@ -43,7 +45,7 @@ async def get_buttons():
     ])
 
 # 🎬 Send intro video
-async def send_start_video(chat_id):
+async def send_start_video(chat_id: int):
     buttons = await get_buttons()
     try:
         await bot.send_video(
@@ -59,32 +61,30 @@ async def send_start_video(chat_id):
 
 # 💌 Private /start
 @bot.on_message(filters.command("start") & filters.private)
+@handle_errors
+@track_user
 async def private_start(_, message: Message):
     chat_id = message.chat.id
 
+    # Loading animation
     loading = await message.reply("⚡")
     await asyncio.sleep(1.5)
     await loading.delete()
 
     msg = await message.reply("𝐋𝐎𝐀𝐃𝐈𝐍𝐆.")
+    for dots in ["..", "..."]:
+        await asyncio.sleep(0.5)
+        await msg.edit(f"𝐋𝐎𝐀𝐃𝐈𝐍𝐆{dots}")
     await asyncio.sleep(0.5)
-    await msg.edit("𝐋𝐎𝐀𝐃𝐈𝐍𝐆..")
-    await asyncio.sleep(0.5)
-    await msg.edit("𝐋𝐎𝐀𝐃𝐈𝐍𝐆...")
-    await asyncio.sleep(1)
     await msg.delete()
 
     await send_start_video(chat_id)
 
 # 🧩 Group /start
 @bot.on_message(filters.command("start") & filters.group)
+@handle_errors
 async def group_start(_, message: Message):
     await save_group_for_drop(message.chat.id)
-
-    text = (
-        "✧ .:｡✧ 𝗡𝗔𝗥𝗨𝗧𝗢 𝗫 𝗪𝗔𝗜𝗙𝗨 ✧｡:. ✧\n\n"
-        "To start playing, please initiate me in DMs!"
-    )
 
     me = await bot.get_me()
     start_button = InlineKeyboardMarkup([[
@@ -92,7 +92,7 @@ async def group_start(_, message: Message):
     ]])
 
     await message.reply_text(
-        text,
+        "✧ .:｡✧ 𝗡𝗔𝗥𝗨𝗧𝗢 𝗫 𝗪𝗔𝗜𝗙𝗨 ✧｡:. ✧\n\nTo start playing, please initiate me in DMs!",
         reply_markup=start_button,
         disable_web_page_preview=True
     )
