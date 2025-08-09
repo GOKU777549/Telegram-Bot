@@ -5,8 +5,7 @@ from sqlalchemy import Column, Integer, UnicodeText, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
-GROUPS_COLLECTION = db.groups  # Collection name: "groups"
-
+GROUPS_COLLECTION = db["groups"]
 
 async def save_group_for_drop(group_id: int, title: str = None):
     """
