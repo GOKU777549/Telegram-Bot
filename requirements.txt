@@ -2,7 +2,9 @@ git+https://github.com/KurimuzonAkuma/pyrogram.git@v2.2.0
 sqlalchemy==1.3.23
 psycopg2-binary
 motor==3.3.2
+kurigram 
 tgcrypto
 python-dotenv
 watchdog
+httpx
 typer
