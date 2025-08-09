@@ -1,6 +1,9 @@
 # Bot/db/groups.py
 
-from Bot.mongo import db  # <-- This should be your MongoDB connection object
+from Bot.db import SESSION, BASE
+from sqlalchemy import Column, Integer, UnicodeText, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
+from datetime import datetime
 
 GROUPS_COLLECTION = db.groups  # Collection name: "groups"
 
