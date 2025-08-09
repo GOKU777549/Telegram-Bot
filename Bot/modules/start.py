@@ -3,93 +3,96 @@ from Bot.db.users import add_user, get_user
 from Bot.core.decorators.tracking import track_user
 from Bot.core.decorators.error_handler import handle_errors
 from Bot.core.utils.formatting import format_user_mention
-
 from pyrogram import filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+import os
+import asyncio
+from pyrogram import filters
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.errors import MediaEmpty
 
-@bot.on_message(filters.command("start"))
-@track_user
-@handle_errors
-async def start(_, message: Message):
-    user = message.from_user
-    add_user(user.id, user.username, user.first_name, user.last_name)
-    
-    # Create welcome message with user info
-    welcome_text = (
-        f"👋 Hello {user.first_name}!\n\n"
-        f"I'm a Telegram bot template with a modular structure and database integration.\n\n"
-        f"<blockquote>Use /help to see available commands.</blockquote>"
-    )
-    
-    # Create inline keyboard with help button
-    keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("Help", callback_data="help")]
+# ✅ Valid video file ID
+VIDEO_FILE_ID = "BAACAgQAAxkBAAMGaJGjPcSIJn1Qi6HZQYnliYyHZZoAAucHAAKJDm1RRZTIdDl7u8AeBA"
+
+CAPTION = """
+┏━━━━━━━━━━━━━━━━━━━━━━━━━⧫
+✾ Wᴇʟᴄᴏᴍᴇ ᴛᴏ ᴛʜᴇ Naruto Bᴏᴛ
+┗━━━━━━━━━━━━━━━━━━━━━━━━━⧫
+┏━━━━━━━━━━━━━━━━━━━━━━━━━⧫
+┠ ➻ I ᴡɪʟʟ ʜᴇʟᴘ ʏᴏᴜ ғɪɴᴅ ʏᴏᴜʀ Wᴀɪғᴜ ᴏʀ Hᴜsʙᴀɴᴅᴏ
+┃        ɪɴ ʏᴏᴜʀ ɢʀᴏᴜᴘ ᴄʜᴀᴛ.
+┠ ➻ Yᴏᴜ ᴄᴀɴ sᴇᴀʟ ᴛʜᴇᴍ ʙʏ /guess ᴄᴏᴍᴍᴀɴᴅ
+┃        ᴀɴᴅ ᴀᴅᴅ ᴛᴏ ʏᴏᴜʀ ʜᴀʀᴇᴍ.
+┗━━━━━━━━━━━━━━━━━━━━━━━━━⧫
+Tᴀᴘ ᴏɴ "Hᴇʟᴘ" ғᴏʀ ᴍᴏʀᴇ ᴄᴏᴍᴍᴀɴᴅs.
+"""
+
+# 🔘 Button layout
+async def get_buttons():
+    me = await bot.get_me()
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("➕ αdd мe тσ yσυʀ ɡʀσυρ", url=f"https://t.me/{me.username}?startgroup=true")],
+        [
+            InlineKeyboardButton("ѕυρρσʀт cнαт", url="https://t.me/+ZyRZJntl2FU0NTk1"),
+            InlineKeyboardButton("ѕυρρσʀт cнαɴɴel", url="https://t.me/Bey_war_updates")
+        ],
+        [
+            InlineKeyboardButton("σωɴer", url="https://t.me/Uzumaki_X_Naruto_6"),
+            InlineKeyboardButton("нelρ", callback_data="help_data")
+        ]
     ])
-    
-    await message.reply_text(welcome_text, reply_markup=keyboard)
 
-@bot.on_message(filters.command("help"))
-@track_user
-@handle_errors
-async def help(_, message: Message):
-    help_text = (
-        "🤖 **Available Commands:**\n\n"
-        "/start - Start the bot\n"
-        "/help - Show this help message\n"
-        "/info - Show information about yourself\n"
-        "/stats - Show bot statistics\n\n"
-        "For more information, visit the [GitHub repository](https://github.com/yourusername/Telegram-Bot)."
+# 🎬 Send intro video
+async def send_start_video(chat_id):
+    buttons = await get_buttons()
+    try:
+        await bot.send_video(
+            chat_id=chat_id,
+            video=VIDEO_FILE_ID,
+            caption=CAPTION,
+            reply_markup=buttons
+        )
+    except MediaEmpty:
+        await bot.send_message(chat_id, "⚠️ The video file is invalid or empty. Contact the bot owner.")
+    except Exception as e:
+        await bot.send_message(chat_id, f"❌ An unexpected error occurred:\n{e}")
+
+# 💌 Private /start
+@bot.on_message(filters.command("start") & filters.private)
+async def private_start(_, message: Message):
+    chat_id = message.chat.id
+
+    loading = await message.reply("⚡")
+    await asyncio.sleep(1.5)
+    await loading.delete()
+
+    msg = await message.reply("𝐋𝐎𝐀𝐃𝐈𝐍𝐆.")
+    await asyncio.sleep(0.5)
+    await msg.edit("𝐋𝐎𝐀𝐃𝐈𝐍𝐆..")
+    await asyncio.sleep(0.5)
+    await msg.edit("𝐋𝐎𝐀𝐃𝐈𝐍𝐆...")
+    await asyncio.sleep(1)
+    await msg.delete()
+
+    await send_start_video(chat_id)
+
+# 🧩 Group /start
+@bot.on_message(filters.command("start") & filters.group)
+async def group_start(_, message: Message):
+    await save_group_for_drop(message.chat.id)
+
+    text = (
+        "✧ .:｡✧ 𝗡𝗔𝗥𝗨𝗧𝗢 𝗫 𝗪𝗔𝗜𝗙𝗨 ✧｡:. ✧\n\n"
+        "To start playing, please initiate me in DMs!"
     )
-    
-    await message.reply_text(help_text, disable_web_page_preview=True)
 
-@bot.on_message(filters.command("info"))
-@track_user
-@handle_errors
-async def info(_, message: Message):
-    user = message.from_user
-    db_user = get_user(user.id)
-    
-    if not db_user:
-        await message.reply_text("You are not registered in the database.")
-        return
-    
-    # Format join date
-    join_date = db_user.join_date.strftime("%Y-%m-%d %H:%M:%S")
-    last_seen = db_user.last_seen.strftime("%Y-%m-%d %H:%M:%S")
-    
-    info_text = (
-        f"👤 **User Information:**\n\n"
-        f"ID: `{user.id}`\n"
-        f"Username: {format_user_mention(user.id, user.username)}\n"
-        f"First Name: {user.first_name}\n"
-        f"Last Name: {user.last_name or 'N/A'}\n"
-        f"Join Date: {join_date}\n"
-        f"Last Seen: {last_seen}"
+    me = await bot.get_me()
+    start_button = InlineKeyboardMarkup([[
+        InlineKeyboardButton("🚀 START IN DM", url=f"https://t.me/{me.username}?start")
+    ]])
+
+    await message.reply_text(
+        text,
+        reply_markup=start_button,
+        disable_web_page_preview=True
     )
-    
-    await message.reply_text(info_text)
-
-@bot.on_message(filters.command("stats"))
-@track_user
-@handle_errors
-async def stats(_, message: Message):
-    from Bot.db.users import get_all_users
-    
-    users = get_all_users()
-    total_users = len(users)
-    
-    stats_text = (
-        f"📊 **Bot Statistics:**\n\n"
-        f"Total Users: {total_users}\n"
-        f"Active Users: {total_users}"
-    )
-    
-    await message.reply_text(stats_text)
-
-@bot.on_callback_query(filters.regex(r"^help$"))
-@handle_errors
-async def callback_handler(_, callback_query):
-    if callback_query.data == "help":
-        await callback_query.answer()
-        await help(_, callback_query.message)
